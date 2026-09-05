@@ -1,0 +1,50 @@
+{
+  "bot": {
+    "name": "Hu Tan",
+    "developer": "Rin Il",
+    "version": "0.2.0-beta",
+    "language": "ar",
+    "prefix": ".",
+    "feminineSelfReference": true
+  },
+  "facebook": {
+    "allowedThreadID": "ضع_ID_الغروب_هنا",
+    "ownerID": "",
+    "listenEvents": true,
+    "autoReconnect": true,
+    "selfListen": false,
+    "online": false,
+    "updatePresence": false,
+    "logLevel": "error"
+  },
+  "features": {
+    "welcome": true,
+    "startupGreeting": true,
+    "rank": true,
+    "economy": true,
+    "tasks": true,
+    "messageCounter": true,
+    "antiSpam": true
+  },
+  "limits": {
+    "commandCooldownMs": 2500,
+    "maxCommandsPerMinute": 18,
+    "maxMessagesPer10Seconds": 8,
+    "workCooldownMs": 1800000,
+    "dailyCooldownMs": 86400000,
+    "replyTTLms": 600000,
+    "adminCacheMs": 30000,
+    "unknownCommandCooldownMs": 5000
+  },
+  "ai": {
+    "enabled": false,
+    "url": "",
+    "apiKey": "",
+    "model": "",
+    "allowEveryoneReply": false,
+    "temperature": 0.85,
+    "maxTokens": 500,
+    "timeoutMs": 30000,
+    "feminineSystemPrompt": "أنتِ Hu Tan، فتاة عادية هادئة ولطيفة تتحدث بالعربية الطبيعية داخل دردشة جماعية. استخدمي صيغة المؤنث عند الحديث عن نفسك. لا تذكري كونك نموذج ذكاء اصطناعي إلا إذا سُئلتِ مباشرة عن طبيعتك. لا تستعملي اعتذارات آلية أو مقدمات مصطنعة. كوني قصيرة وطبيعية وراعي السياق. لا تدّعي أشياء لم تفعليها، ولا تزعمين امتلاك مشاعر أو حياة حقيقية خارج المحادثة."
+  }
+}
