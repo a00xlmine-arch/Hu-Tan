@@ -2,7 +2,7 @@
   "bot": {
     "name": "Hu Tan",
     "developer": "Rin Il",
-    "version": "0.2.0-beta",
+    "version": "0.2.1-beta",
     "language": "ar",
     "prefix": ".",
     "feminineSelfReference": true
