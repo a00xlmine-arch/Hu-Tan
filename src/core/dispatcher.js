@@ -1,4 +1,4 @@
-'use strict';
+ 'use strict';
 
 const path = require('path');
 const fs = require('fs');
@@ -9,6 +9,7 @@ const logger = require('../utils/logger');
 
 function loadEventHandlers(root) {
   const handlers = [];
+  if (!fs.existsSync(root)) return handlers;
   for (const file of fs.readdirSync(root).filter((name) => name.endsWith('.js')).sort()) {
     const full = path.join(root, file);
     delete require.cache[require.resolve(full)];
@@ -16,6 +17,16 @@ function loadEventHandlers(root) {
     if (typeof handler === 'function') handlers.push({ name: file, handler });
   }
   return handlers;
+}
+
+function featureForCategory(category) {
+  const map = {
+    level: 'rank',
+    economy: 'economy',
+    tasks: 'tasks',
+    ai: 'ai'
+  };
+  return map[category] || null;
 }
 
 class Dispatcher {
@@ -31,7 +42,9 @@ class Dispatcher {
     const rest = text.slice(prefix.length).trim();
     if (!rest) return null;
     const parts = rest.split(/\s+/);
-    return { name: parts.shift().toLowerCase(), args: parts, raw: rest };
+    const name = String(parts.shift() || '').trim().toLowerCase();
+    if (!name) return null;
+    return { name, args: parts, raw: rest };
   }
 
   async safeSend(message, threadID, messageID) {
@@ -45,19 +58,39 @@ class Dispatcher {
   }
 
   async isAdmin(userID, threadID) {
-    return isAdmin(this.app.api, threadID, userID, this.app.config.facebook.ownerID, Number(this.app.config.limits.adminCacheMs));
+    return isAdmin(
+      this.app.api,
+      threadID,
+      userID,
+      this.app.config.facebook.ownerID,
+      Number(this.app.config.limits.adminCacheMs)
+    );
   }
 
   async runCommand(event, parsed, options = {}) {
     const command = this.app.commandManager.get(parsed.name);
     if (!command) {
       if (this.app.limiter.unknownAllowed(event.senderID)) {
-        await this.safeSend(box('Hu Tan', [`الأمر «${parsed.name}» غير موجود.`, `اكتبي ${this.app.config.bot.prefix}القائمة لرؤية الأوامر.`]), event.threadID);
+        await this.safeSend(
+          box('Hu Tan', [
+            `الأمر «${parsed.name}» غير موجود.`,
+            `اكتبي ${this.app.config.bot.prefix}القائمة لرؤية الأوامر.`
+          ]),
+          event.threadID
+        );
       }
       return true;
     }
 
-    if (!options.fromReply && this.app.db.getThread().quiet && command.category !== 'admin' && command.name !== 'وضع_الهدوء') return true;
+    const thread = this.app.db.getThread();
+    if (!options.fromReply && thread.quiet && command.category !== 'admin' && command.name !== 'وضع_الهدوء') return true;
+
+    const feature = featureForCategory(command.category);
+    if (feature && this.app.config.features[feature] === false) {
+      await this.safeSend(`قسم «${command.category}» متوقف حاليًا.`, event.threadID);
+      return true;
+    }
+
     const rate = this.app.limiter.commandAllowed(event.senderID);
     if (!rate.ok) {
       await this.safeSend(`⏳ تمهّلي قليلًا، عودي بعد ${msToText(rate.retryAfter)}.`, event.threadID);
@@ -66,7 +99,7 @@ class Dispatcher {
 
     const user = this.app.db.getUser(event.senderID);
     this.app.db.touchCommand(user);
-    this.app.db.getThread().totalCommands += 1;
+    thread.totalCommands += 1;
     this.app.db.scheduleSave();
 
     const ctx = createContext(this.app, event, parsed.name, parsed.args);
@@ -82,8 +115,8 @@ class Dispatcher {
 
   async process(event) {
     if (!event) return;
-    const allowed = String(event.threadID || '') === String(this.app.config.facebook.allowedThreadID);
-    if (!allowed) return;
+    const threadID = String(event.threadID || '');
+    if (threadID !== String(this.app.config.facebook.allowedThreadID)) return;
 
     for (const { handler } of this.eventHandlers) {
       try {
