@@ -1,0 +1,20 @@
+{
+  "name": "hu-tan",
+  "version": "0.2.0-beta",
+  "description": "Hu Tan — بوت Messenger عربي Modular، المطور: Rin Il",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node index.js",
+    "setup": "node setup.js",
+    "check": "node scripts/check.js",
+    "smoke": "node scripts/smoke.js",
+    "test": "node scripts/check.js && node scripts/smoke.js && node scripts/integration-local.js"
+  },
+  "engines": {
+    "node": ">=18.18.0"
+  },
+  "dependencies": {
+    "@anbuinfosec/fca-unofficial": "2.0.0"
+  }
+}
